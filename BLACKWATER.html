@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLACKWATER // 기밀 분류 기록부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#e7e2d6;
+  --paper-2:#ddd7c8;
+  --paper-deep:#d2ccbb;
+  --ink:#1c1a16;
+  --ink-soft:#3d3a32;
+  --ink-faint:#6b6658;
+  --ink-ghost:#9a9483;
+  --rule:#b8b1a0;
+  --rule-soft:#cbc4b3;
+  --stamp:#8f2b22;
+  --stamp-deep:#6e211a;
+  --redact:#161310;
+  --type:'Special Elite',monospace;
+  --mono:'IBM Plex Mono',monospace;
+  --serif:'Noto Serif KR',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:#100f0d;
+  color:var(--ink);
+  font-family:var(--serif);
+  font-weight:400;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* paper texture sheet */
+.sheet{
+  max-width:1000px;margin:0 auto;
+  background:var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(120,110,90,.05) 31px,rgba(120,110,90,.05) 32px),
+    radial-gradient(circle at 18% 12%,rgba(150,130,90,.07),transparent 25%),
+    radial-gradient(circle at 82% 78%,rgba(120,100,70,.06),transparent 30%);
+  box-shadow:0 0 80px rgba(0,0,0,.7);
+  position:relative;
+}
+.sheet::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%,transparent 60%,rgba(60,50,35,.22) 100%);
+  mix-blend-mode:multiply;
+}
+.mono{font-family:var(--mono)}
+.type{font-family:var(--type)}
+::selection{background:var(--ink);color:var(--paper)}
+
+.pad{padding:0 clamp(24px,6vw,72px)}
+
+/* ===== file header strip ===== */
+.filebar{
+  border-bottom:3px double var(--ink);
+  padding:14px clamp(24px,6vw,72px);
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);
+  flex-wrap:wrap;
+}
+.filebar .lhs{display:flex;align-items:center;gap:14px}
+.filebar .barcode{
+  width:90px;height:26px;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 2px,var(--ink) 2px 4px,transparent 4px 5px,var(--ink) 5px 7px,transparent 7px 9px,var(--ink) 9px 10px,transparent 10px 13px);
+}
+.filebar b{color:var(--ink);font-weight:700}
+.filebar .cls{color:var(--stamp);font-weight:700;letter-spacing:.12em}
+
+/* ===== hero / cover ===== */
+.cover{padding:clamp(40px,7vw,80px) 0 clamp(36px,5vw,60px);position:relative}
+.cover .stamp-cls{
+  position:absolute;top:clamp(30px,5vw,56px);right:clamp(24px,6vw,72px);
+  transform:rotate(-9deg);
+  border:3px solid var(--stamp);color:var(--stamp);
+  font-family:var(--type);font-size:clamp(13px,1.8vw,18px);letter-spacing:.14em;
+  padding:8px 16px;opacity:.82;
+  box-shadow:inset 0 0 0 2px rgba(143,43,34,.25);
+  text-align:center;line-height:1.3;
+}
+.cover .stamp-cls small{display:block;font-size:9px;letter-spacing:.2em;margin-top:3px}
+.eyebrow{
+  font-family:var(--mono);font-size:12px;letter-spacing:.34em;color:var(--ink-faint);
+  text-transform:uppercase;margin-bottom:22px;
+}
+.cover h1{
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(44px,9vw,104px);line-height:.92;letter-spacing:-.02em;color:var(--ink);
+}
+.cover .romaji{
+  font-family:var(--type);font-size:clamp(12px,1.6vw,16px);letter-spacing:.5em;
+  color:var(--ink-faint);margin-top:18px;
+}
+.cover .docline{
+  margin-top:34px;padding-top:22px;border-top:1px solid var(--rule);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  font-family:var(--mono);
+}
+.cover .docline > div{padding:4px 16px 4px 0}
+.cover .docline .k{font-size:10px;letter-spacing:.16em;color:var(--ink-ghost);text-transform:uppercase}
+.cover .docline .v{font-size:14px;color:var(--ink);font-weight:600;margin-top:5px}
+.cover .docline .v.r{color:var(--stamp)}
+@media(max-width:680px){.cover .docline{grid-template-columns:repeat(2,1fr);gap:14px 0}}
+
+/* ===== nav (file tabs) ===== */
+nav.tabs{
+  position:sticky;top:0;z-index:80;
+  background:var(--paper-deep);
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);
+}
+nav.tabs .inner{
+  max-width:1000px;margin:0 auto;display:flex;overflow-x:auto;scrollbar-width:none;
+}
+nav.tabs .inner::-webkit-scrollbar{display:none}
+nav.tabs a{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  color:var(--ink-faint);text-decoration:none;text-transform:uppercase;
+  padding:11px 18px;border-right:1px solid var(--rule);white-space:nowrap;
+  transition:background .12s,color .12s;
+}
+nav.tabs a:hover,nav.tabs a.on{background:var(--ink);color:var(--paper)}
+nav.tabs a .n{color:var(--stamp);margin-right:8px;font-weight:700}
+nav.tabs a:hover .n,nav.tabs a.on .n{color:var(--paper)}
+
+/* ===== section frame ===== */
+section{padding:clamp(48px,7vw,80px) 0;border-bottom:1px solid var(--rule)}
+.sec-head{margin-bottom:30px}
+.sec-head .label{
+  font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--ink-faint);
+  text-transform:uppercase;margin-bottom:10px;
+}
+.sec-head .titlerow{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.sec-no{
+  font-family:var(--type);font-size:clamp(26px,4vw,40px);color:var(--stamp);
+  line-height:1;
+}
+.sec-head h2{
+  font-family:var(--serif);font-weight:900;font-size:clamp(24px,4vw,38px);
+  color:var(--ink);letter-spacing:-.01em;line-height:1.1;
+}
+.sec-intro{
+  max-width:62ch;font-size:15.5px;color:var(--ink-soft);margin-bottom:8px;
+  border-left:3px solid var(--ink);padding-left:18px;
+}
+
+/* redaction */
+.redact{
+  background:var(--redact);color:transparent;
+  padding:0 6px;border-radius:1px;cursor:not-allowed;
+  position:relative;user-select:none;
+  box-shadow:0 1px 0 rgba(0,0,0,.4);
+}
+.redact::after{
+  content:"ACCESS DENIED";
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--stamp);
+  opacity:0;transition:opacity .15s;white-space:nowrap;background:var(--redact);
+}
+.redact:hover::after{opacity:1}
+
+/* ===== overview ===== */
+.brief-grid{display:grid;grid-template-columns:1fr;gap:22px;margin-top:8px}
+.brief-grid .blk h4{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--stamp);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid var(--rule);padding-bottom:8px}
+.brief-grid .blk p{font-size:15px;color:var(--ink-soft)}
+
+.specsheet{margin-top:30px;border:1px solid var(--ink);font-family:var(--mono)}
+.specsheet .row{display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid var(--rule)}
+.specsheet .row:last-child{border-bottom:none}
+.specsheet .row .k{padding:12px 18px;background:var(--paper-2);font-size:11px;letter-spacing:.12em;color:var(--ink-faint);text-transform:uppercase;border-right:1px solid var(--rule)}
+.specsheet .row .v{padding:12px 18px;font-size:13.5px;color:var(--ink)}
+@media(max-width:600px){.specsheet .row{grid-template-columns:130px 1fr}}
+
+/* ===== hierarchy ===== */
+.tiers{margin-top:8px;border:1px solid var(--ink)}
+.tier{display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--ink)}
+.tier:last-child{border-bottom:none}
+.tier .stub{
+  padding:24px 20px;border-right:1px solid var(--ink);
+  background:var(--paper-2);position:relative;
+}
+.tier .stub .t{font-family:var(--type);font-size:28px;color:var(--ink);line-height:1}
+.tier .stub .lvl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-faint);margin-top:6px}
+.tier .meat{padding:22px 26px}
+.tier .meat .nm{font-family:var(--serif);font-weight:700;font-size:18px;color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.tier .meat .nm .en{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-ghost);border:1px solid var(--rule);padding:2px 8px}
+.tier .meat .fn{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--stamp);text-transform:uppercase;margin:8px 0 12px}
+.tier .meat p{font-size:14px;color:var(--ink-soft)}
+.tier .meat .demote{margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.tier .meat .demote b{color:var(--stamp);font-weight:600}
+@media(max-width:600px){.tier{grid-template-columns:96px 1fr}.tier .stub .t{font-size:22px}}
+
+/* ===== sectors ===== */
+.sectors{margin-top:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));border:1px solid var(--ink);border-right:none;border-bottom:none}
+.sct{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:24px 22px;position:relative}
+.sct .gk{position:absolute;top:14px;right:20px;font-family:var(--serif);font-weight:900;font-size:42px;color:var(--rule-soft);line-height:1}
+.sct .cd{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--stamp)}
+.sct .nm{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--ink);margin:6px 0 12px}
+.sct p{font-size:13.5px;color:var(--ink-soft)}
+
+/* ===== rules ===== */
+.rules{margin-top:8px;border:1px solid var(--ink)}
+.rule{display:grid;grid-template-columns:96px 1fr;border-bottom:1px solid var(--rule)}
+.rule:last-child{border-bottom:none}
+.rule .code{padding:20px;border-right:1px solid var(--rule);background:var(--paper-2);font-family:var(--type);font-size:14px;color:var(--stamp);letter-spacing:.05em}
+.rule .txt{padding:20px 26px}
+.rule .txt h4{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--ink);margin-bottom:7px}
+.rule .txt p{font-size:14px;color:var(--ink-soft)}
+
+/* ===== roster ===== */
+.legend{margin-top:6px;margin-bottom:24px;display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.legend .lg{border:1px solid var(--ink);padding:6px 12px;letter-spacing:.08em}
+.legend .lg b{color:var(--stamp)}
+.legend .hint{color:var(--ink-ghost);align-self:center;font-style:italic}
+
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px}
+
+/* file card */
+.fcard{
+  border:1px solid var(--ink);background:var(--paper);
+  position:relative;
+}
+.fcard .corner{position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 26px 26px 0;border-color:transparent var(--ink) transparent transparent}
+.fcard .corner::after{content:"";position:absolute;top:2px;right:-24px;width:16px;height:1px;background:var(--paper)}
+.fcard .hd{padding:16px 20px 12px;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.fcard .pid{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);letter-spacing:.06em}
+.fcard .pid small{display:block;font-size:9px;color:var(--ink-ghost);letter-spacing:.16em;margin-top:3px;font-weight:400}
+.fcard .clr{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--ink-faint);border:1px solid var(--rule);padding:3px 7px;white-space:nowrap}
+.fcard.guard .clr{color:var(--stamp);border-color:var(--stamp)}
+.fcard .bd{padding:18px 20px}
+.fcard .photo{
+  width:100%;aspect-ratio:1/1;margin-bottom:16px;
+  background:var(--paper-2);
+  border:1px solid var(--ink);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.fcard .photo::before{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(45deg,transparent 48%,var(--rule) 49%,var(--rule) 51%,transparent 52%),
+    linear-gradient(-45deg,transparent 48%,var(--rule) 49%,var(--rule) 51%,transparent 52%);
+  opacity:.5;
+}
+.fcard .photo .ph-label{
+  position:relative;font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+  color:var(--ink-ghost);text-transform:uppercase;
+  background:var(--paper);padding:4px 10px;border:1px solid var(--rule);
+}
+.fcard .photo img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:2;filter:grayscale(.15) contrast(1.02);
+}
+.fcard .photo.has-img::before{opacity:0}
+.fcard .photo .ph-corner{
+  position:absolute;width:14px;height:14px;border:1px solid var(--ink-faint);
+}
+.fcard .photo .ph-corner.tl{top:8px;left:8px;border-right:none;border-bottom:none}
+.fcard .photo .ph-corner.tr{top:8px;right:8px;border-left:none;border-bottom:none}
+.fcard .photo .ph-corner.bl{bottom:8px;left:8px;border-right:none;border-top:none}
+.fcard .photo .ph-corner.br{bottom:8px;right:8px;border-left:none;border-top:none}
+.fcard .nm{font-family:var(--serif);font-weight:900;font-size:22px;color:var(--ink);line-height:1.15}
+.fcard .alias{font-family:var(--type);font-size:12px;color:var(--ink-faint);margin-top:7px;letter-spacing:.06em}
+.fcard .alias b{color:var(--stamp);font-weight:400}
+.fcard .twocol{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule);margin-top:16px;font-family:var(--mono)}
+.fcard .twocol > div{padding:9px 14px}
+.fcard .twocol > div:first-child{border-right:1px solid var(--rule)}
+.fcard .twocol .k{font-size:9px;letter-spacing:.1em;color:var(--ink-ghost);text-transform:uppercase}
+.fcard .twocol .v{font-size:15px;color:var(--ink);margin-top:3px;font-weight:600}
+.fcard .field{margin-top:16px}
+.fcard .field .k{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--stamp);text-transform:uppercase;margin-bottom:7px}
+.fcard .field p{font-size:13.5px;color:var(--ink-soft);line-height:1.65}
+
+/* flip card for guards */
+.flip{perspective:1600px}
+.flip .inner{position:relative;transition:transform .6s cubic-bezier(.4,.1,.2,1);transform-style:preserve-3d}
+.flip.flipped .inner{transform:rotateY(180deg)}
+.flip .face{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip .back{position:absolute;inset:0;transform:rotateY(180deg);background:var(--paper-deep);display:flex;flex-direction:column}
+.flip .flag{
+  width:100%;text-align:left;cursor:pointer;border:none;
+  background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  padding:9px 20px;display:flex;justify-content:space-between;align-items:center;
+}
+.flip .flag .ico{transition:transform .3s}
+.flip.flipped .flag .ico{transform:rotate(180deg)}
+.flip .flag:hover{background:var(--stamp-deep)}
+.flip .back .hd{border-bottom:1px solid var(--ink)}
+.flip .back .reclass{
+  font-family:var(--type);color:var(--stamp);border:2px solid var(--stamp);
+  display:inline-block;padding:5px 12px;font-size:12px;letter-spacing:.1em;
+  transform:rotate(-3deg);margin:16px 20px 4px;opacity:.85;
+}
+.flip .back .bd{padding:8px 20px 18px;flex:1}
+.flip .back .field p .em{color:var(--ink);font-weight:600}
+
+@media(prefers-reduced-motion:reduce){.flip .inner{transition:none}}
+
+/* ===== footer ===== */
+footer{padding:clamp(40px,6vw,64px) 0;border-bottom:none}
+.foot{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.foot .sig{font-family:var(--type);font-size:13px;color:var(--ink-faint);letter-spacing:.04em}
+.foot .sig .ln{display:inline-block;width:180px;border-bottom:1px solid var(--ink);margin-bottom:4px}
+.foot .meta{font-family:var(--mono);font-size:10px;color:var(--ink-faint);text-align:right;line-height:1.9;letter-spacing:.06em}
+.foot .meta .r{color:var(--stamp)}
+.foot-stamp{
+  display:inline-block;border:3px double var(--stamp);color:var(--stamp);
+  font-family:var(--type);font-size:13px;letter-spacing:.12em;padding:8px 16px;
+  transform:rotate(-4deg);opacity:.8;margin-top:14px;
+}
+
+/* ===== mobile optimization ===== */
+@media(max-width:760px){
+  .roster{grid-template-columns:1fr;gap:18px}
+  .sectors{grid-template-columns:1fr}
+  .sct .gk{font-size:36px}
+}
+@media(max-width:560px){
+  body{line-height:1.7}
+  .pad{padding:0 20px}
+  .filebar{padding:12px 20px;font-size:10px;gap:10px}
+  .filebar .barcode{width:64px;height:20px}
+  .filebar .lhs{gap:10px}
+  /* cover */
+  .cover{padding:36px 0 30px}
+  .cover .stamp-cls{position:static;transform:rotate(-6deg);display:inline-block;margin-bottom:18px}
+  .eyebrow{font-size:11px;letter-spacing:.24em;margin-bottom:16px}
+  .cover .romaji{letter-spacing:.3em;word-break:break-word}
+  .cover .docline{grid-template-columns:1fr 1fr;gap:14px 0;margin-top:26px;padding-top:18px}
+  .cover .docline > div{padding:4px 12px 4px 0}
+  /* nav tabs */
+  nav.tabs a{padding:10px 14px;font-size:10px;letter-spacing:.05em}
+  /* section heads */
+  section{padding:44px 0}
+  .sec-head{margin-bottom:24px}
+  .sec-intro{font-size:14.5px;padding-left:14px}
+  /* spec sheet -> stack */
+  .specsheet .row{grid-template-columns:1fr}
+  .specsheet .row .k{border-right:none;border-bottom:1px solid var(--rule)}
+  /* tiers -> stack stub on top */
+  .tier{grid-template-columns:1fr}
+  .tier .stub{
+    border-right:none;border-bottom:1px solid var(--ink);
+    flex-direction:row;display:flex;align-items:baseline;gap:12px;padding:14px 20px;
+  }
+  .tier .stub .t{font-size:22px}
+  .tier .stub .lvl{margin-top:0}
+  .tier .meat{padding:20px}
+  /* rules -> stack code on top */
+  .rule{grid-template-columns:1fr}
+  .rule .code{border-right:none;border-bottom:1px solid var(--rule);padding:12px 20px}
+  .rule .txt{padding:18px 20px}
+  /* roster cards */
+  .fcard .nm{font-size:20px}
+  .fcard .bd{padding:16px}
+  /* flip button always tappable */
+  .flip .flag{padding:11px 16px;font-size:10px}
+}
+@media(max-width:380px){
+  .cover .docline{grid-template-columns:1fr}
+  .legend{flex-direction:column;align-items:flex-start;gap:8px}
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="filebar">
+    <div class="lhs">
+      <div class="barcode"></div>
+      <span>FILE <b>BW-ROSTER-A1</b></span>
+      <span>REV <b>07</b></span>
+    </div>
+    <span class="cls">⬛ CLASSIFIED — OMEGA EYES ONLY</span>
+  </div>
+
+  <!-- COVER -->
+  <header class="cover pad">
+    <div class="stamp-cls">CLASSIFIED<small>LEVEL ∞</small></div>
+    <div class="eyebrow">FACILITY DOSSIER · 시설 분류 기록부</div>
+    <h1>BLACKWATER</h1>
+    <div class="romaji">B L A C K W A T E R　·　교 정 시 설 기 록</div>
+    <div class="docline">
+      <div><div class="k">시설 코드</div><div class="v r">BLACKWATER</div></div>
+      <div><div class="k">관할</div><div class="v">US TERRITORY</div></div>
+      <div><div class="k">설립</div><div class="v">2100</div></div>
+      <div><div class="k">발급 권한</div><div class="v"><span class="redact mono">REDACTED</span></div></div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <div class="inner">
+      <a href="#overview" class="on"><span class="n">00</span>시설 개요</a>
+      <a href="#hierarchy"><span class="n">01</span>위계 구조</a>
+      <a href="#sectors"><span class="n">02</span>섹터</a>
+      <a href="#rules"><span class="n">03</span>운영 규정</a>
+      <a href="#roster"><span class="n">04</span>수감 명부</a>
+    </div>
+  </nav>
+
+  <!-- 00 -->
+  <section id="overview" class="pad">
+    <div class="sec-head">
+      <div class="label">FACILITY BRIEF</div>
+      <div class="titlerow"><span class="sec-no">00</span><h2>시설 개요</h2></div>
+    </div>
+    <p class="sec-intro">본 시설은 범죄율이 수용 한계를 초과한 2100년, 사형만으로는 범죄 억제가 불가능하다고 판단된 시점에 설립되었다. 교화 가능성이 전무한 것으로 판정된 전 세계 흉악범을 단일 시설에 영구 수용함을 원칙으로 한다.</p>
+
+    <div class="brief-grid">
+      <div class="blk">
+        <h4>// 설립 목적</h4>
+        <p>본 시설의 목적은 교화 및 사회 복귀가 아니다. 죽을 권리조차 박탈된 채 자아가 해체되는 과정을 데이터로 변환하여, 외부 세계에 공포를 각인시키고 범죄율을 강제로 억제하는 것이다.</p>
+      </div>
+      <div class="blk">
+        <h4>// 운영 방침</h4>
+        <p>시설 내 모든 절차는 행정 체계에 따라 집행된다. 처벌 및 보상은 예외 없이 데이터로 환산되어 기록·관리된다.</p>
+      </div>
+    </div>
+
+    <div class="specsheet">
+      <div class="row"><div class="k">분류</div><div class="v">영구 수용 / PERMANENT</div></div>
+      <div class="row"><div class="k">위계 계층</div><div class="v">04 TIER</div></div>
+      <div class="row"><div class="k">기능 섹터</div><div class="v">05 SECTOR · ALPHA / BETA / GAMMA / DELTA / OMEGA</div></div>
+      <div class="row"><div class="k">수감 기간</div><div class="v">무기한 / 석방 절차 미존재</div></div>
+      <div class="row"><div class="k">관리자 정보</div><div class="v"><span class="redact mono">████████████████████</span></div></div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="hierarchy" class="pad">
+    <div class="sec-head">
+      <div class="label">HIERARCHY</div>
+      <div class="titlerow"><span class="sec-no">01</span><h2>위계 구조</h2></div>
+    </div>
+    <p class="sec-intro">시설 내 모든 인원은 효용 가치에 따라 4개 계층으로 분류된다. 계층은 고정되지 아니하며, 성과 및 규정 위반 여부에 따라 즉시 상하 조정된다.</p>
+
+    <div class="tiers">
+      <div class="tier">
+        <div class="stub"><div class="t">T1</div><div class="lvl">TIER ONE</div></div>
+        <div class="meat">
+          <div class="nm">관리자 <span class="en">WARDEN</span></div>
+          <p>시설 내 생사여탈권 및 배급 통제권을 단독 보유하는 유일한 권력자이다. 본 시설에서 유일하게 범죄자 신분에 해당하지 아니한다. 관련 정보 일체는 <span class="redact mono">██████</span>로 분류된다.</p>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="stub"><div class="t">T2</div><div class="lvl">TIER TWO</div></div>
+        <div class="meat">
+          <div class="nm">행정직 <span class="en">OPERATOR</span></div>
+          <p>GAMMA 섹터에서 전송되는 수감자 생체 신호를 지표로 변환하고, 이를 근거로 현장 교도관의 성과를 실시간 평가·통제한다. 무급으로 운영되며, 휴일을 두지 아니하고 1일 수면 시간은 4시간으로 제한된다.</p>
+          <div class="demote">강등 조건 — <b>계산 오류 · 모니터 이탈 시 즉시 TIER 3 강등</b></div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="stub"><div class="t">T3</div><div class="lvl">TIER THREE</div></div>
+        <div class="meat">
+          <div class="nm">교도관 <span class="en">GUARD</span></div>
+          <p>이들 역시 범죄자 신분에 해당하나, 사형 선고자 중 범죄의 성격이 수감자에 미치지 못한다고 판정된 부류이다. 방한 기능이 없는 전술복, 압축 식량, 카메라가 가동되는 다인 막사가 제공된다.</p>
+          <div class="demote">강등 조건 — <b>지표 할당량 미달 · 성과 부진 시 즉시 TIER 4 강등</b></div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="stub"><div class="t">T4</div><div class="lvl">TIER FOUR</div></div>
+        <div class="meat">
+          <div class="nm">수감자 <span class="en">INMATE</span></div>
+          <p>신체 보호용 의복은 지급되지 아니한다. 24시간 착용이 강제되는 통제 장구가 부여되며, 미각이 제거된 생존 유지용 화학 영양제에 한하여 공급된다. 본명은 영구 말소되고 수감자 번호로만 호명된다.</p>
+          <div class="demote">계층 최하위 — <b>이름 · 체온 유지 · 수면 일체 미고려</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="sectors" class="pad">
+    <div class="sec-head">
+      <div class="label">SECTOR MAP</div>
+      <div class="titlerow"><span class="sec-no">02</span><h2>섹터 구분</h2></div>
+    </div>
+    <p class="sec-intro">시설은 기능에 따라 5개 섹터로 분할 운영된다.</p>
+
+    <div class="sectors">
+      <div class="sct"><div class="gk">Α</div><div class="cd">ALPHA</div><div class="nm">수감자 수감동</div><p>빛과 소리가 100% 차단된 무반향 독방으로 구성된다. 교도관이 문을 개방하기 전까지 공(空)의 상태가 유지된다. 이동 시 통제 장구 착용이 강제된다.</p></div>
+      <div class="sct"><div class="gk">Β</div><div class="cd">BETA</div><div class="nm">교도관 수감동</div><p>TIER 3 교도관의 통제 거주 구역이다. ALPHA 섹터와 동일 건물 내 격벽으로 분리하여 운영된다.</p></div>
+      <div class="sct"><div class="gk">Γ</div><div class="cd">GAMMA</div><div class="nm">작업장</div><p>자아 해체 절차가 집행되는 구역이다. 생체 신호가 행정직에게 실시간 전송되어 지표로 산출되는 핵심 데이터 수집점에 해당한다.</p></div>
+      <div class="sct"><div class="gk">Δ</div><div class="cd">DELTA</div><div class="nm">중앙 통제실</div><p>TIER 2 행정직의 작업 및 생활 구역이다. 콘솔 앞에 결박된 상태로 데이터 계산 및 감시 업무가 수행된다.</p></div>
+      <div class="sct"><div class="gk">Ω</div><div class="cd">OMEGA</div><div class="nm">관리자 구역</div><p>관리자가 상주하는 격리 구역이다. 외부 자원 및 신규 수감자가 유입되는 단일 통로이며, 접근 권한은 <span class="redact mono">█████</span>로 통제된다.</p></div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="rules" class="pad">
+    <div class="sec-head">
+      <div class="label">STANDING ORDERS</div>
+      <div class="titlerow"><span class="sec-no">03</span><h2>운영 규정</h2></div>
+    </div>
+    <p class="sec-intro">시설 내 전 인원에게 예외 없이 적용되는 상시 규정이다.</p>
+
+    <div class="rules">
+      <div class="rule"><div class="code">R-01</div><div class="txt"><h4>호명 규정</h4><p>수감자의 본명은 영구 말소된다. 호명은 수감자 번호 또는 부여된 별칭에 한하며, 본명 사용은 일체 금지된다.</p></div></div>
+      <div class="rule"><div class="code">R-02</div><div class="txt"><h4>계층 변동 규정</h4><p>계층은 고정되지 아니한다. 성과 미달 또는 규정 위반 적발 시 즉시 하위 계층으로 강등되며, 별도의 통보 절차는 두지 아니한다.</p></div></div>
+      <div class="rule"><div class="code">R-03</div><div class="txt"><h4>장구 착용 규정</h4><p>수감자에게는 신체 보호용 의복을 지급하지 아니한다. 통제 장구의 24시간 착용을 강제하며, 이동 시 규정된 자세를 준수하여야 한다.</p></div></div>
+      <div class="rule"><div class="code">R-04</div><div class="txt"><h4>배급 규정</h4><p>미각이 제거된 생존 유지용 화학 영양제에 한하여 공급한다. 수면 및 체온 유지는 시설 운영의 고려 대상에 포함되지 아니한다.</p></div></div>
+      <div class="rule"><div class="code">R-05</div><div class="txt"><h4>데이터 전송 규정</h4><p>GAMMA 섹터에서 발생하는 모든 생체 신호는 DELTA 중앙 통제실로 실시간 전송된다. 전송 누락 및 계산 오류는 담당 행정직의 즉시 강등 사유에 해당한다.</p></div></div>
+      <div class="rule"><div class="code">R-06</div><div class="txt"><h4>기밀 규정</h4><p>관리자 관련 정보 일체는 <span class="redact mono">████</span>로 분류된다. OMEGA 구역 접근 및 관리자 신원 조회는 전 계층에 대하여 금지된다.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="roster" class="pad">
+    <div class="sec-head">
+      <div class="label">INMATE ROSTER</div>
+      <div class="titlerow"><span class="sec-no">04</span><h2>수감 명부</h2></div>
+    </div>
+    <p class="sec-intro">ALPHA-1 섹터 등록 인원 명부이다. 식별 정보 및 수감 사유를 발췌하여 기재한다.</p>
+
+    <div class="legend">
+      <span class="lg">총원 <b>08</b></span>
+      <span class="lg">TIER 4 <b>06</b></span>
+      <span class="lg">TIER 3 <b>02</b></span>
+      <span class="hint">※ 교도관 기록은 클릭 시 강등 재분류 정보가 열람됩니다.</span>
+    </div>
+
+    <div class="roster">
+
+      <!-- GUARD 1 — flip -->
+      <div class="fcard guard flip" id="card-gideon">
+        <div class="inner">
+          <div class="face front">
+            <div class="corner"></div>
+            <div class="hd">
+              <div class="pid">BADGE NO.002<small>GUARD ID</small></div>
+              <div class="clr">TIER 3 / GUARD</div>
+            </div>
+            <div class="bd">
+              <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/GG.png" alt="기디언 마샬" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+              <div class="nm">기디언 마샬</div>
+              <div class="alias">현장 직무 · <b>통제관</b></div>
+              <div class="twocol">
+                <div><div class="k">나이</div><div class="v">38</div></div>
+                <div><div class="k">신장</div><div class="v">188</div></div>
+              </div>
+              <div class="field">
+                <div class="k">선임 경위</div>
+                <p>전 클럽 오너. 운영 중 불법 약물·주류를 유통하고, 통제 수위 조절에 실패해 사망자를 발생시킴. 사형 선고 후 시스템 통제관으로 선발됨.</p>
+              </div>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="hd">
+              <div class="pid">X-0001<small>PRISONER NO.</small></div>
+              <div class="clr">강등 시 / TIER 4</div>
+            </div>
+            <div class="reclass">▣ RECLASSIFIED</div>
+            <div class="bd">
+              <div class="field">
+                <div class="k">강등 시 재분류 정보</div>
+                <p>성과 부진 또는 규정 위반 적발 시, 교도관 신분이 즉시 박탈되고 <span class="em">수감자 번호 X-0001</span>로 재분류된다. 배정 거실: <span class="em">ALPHA-1 SECTOR X-0001호실.</span> 별칭 <b style="color:var(--stamp)">폐급</b> 부여.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="flag" data-flip="card-gideon"><span>강등 재분류 정보 열람</span><span class="ico">▾</span></button>
+      </div>
+
+      <!-- GUARD 2 — flip -->
+      <div class="fcard guard flip" id="card-vance">
+        <div class="inner">
+          <div class="face front">
+            <div class="corner"></div>
+            <div class="hd">
+              <div class="pid">BADGE NO.001<small>GUARD ID</small></div>
+              <div class="clr">TIER 3 / GUARD</div>
+            </div>
+            <div class="bd">
+              <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/VV.png" alt="밴스 갤러거" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+              <div class="nm">밴스 갤러거</div>
+              <div class="alias">현장 직무 · <b>보안과장</b></div>
+              <div class="twocol">
+                <div><div class="k">나이</div><div class="v">35</div></div>
+                <div><div class="k">신장</div><div class="v">190</div></div>
+              </div>
+              <div class="field">
+                <div class="k">선임 경위</div>
+                <p>범죄자에게 친구를 잃은 트라우마. 사법 시스템의 미온적 처벌에 분노해 스스로 범죄자를 사냥함. 사법 절차를 무시한 과도한 폭력으로 체포됨.</p>
+              </div>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="hd">
+              <div class="pid">X-0002<small>PRISONER NO.</small></div>
+              <div class="clr">강등 시 / TIER 4</div>
+            </div>
+            <div class="reclass">▣ RECLASSIFIED</div>
+            <div class="bd">
+              <div class="field">
+                <div class="k">강등 시 재분류 정보</div>
+                <p>성과 부진 또는 규정 위반 적발 시, 보안과장 직위가 즉시 박탈되고 <span class="em">수감자 번호 X-0002</span>로 재분류된다. 배정 거실: <span class="em">ALPHA-1 SECTOR X-0002호실.</span> 별칭 <b style="color:var(--stamp)">오물</b> 부여.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="flag" data-flip="card-vance"><span>강등 재분류 정보 열람</span><span class="ico">▾</span></button>
+      </div>
+
+      <!-- INMATES -->
+      <div class="fcard">
+        <div class="corner"></div>
+        <div class="hd"><div class="pid">A-7021<small>PRISONER NO.</small></div><div class="clr">TIER 4 / INMATE</div></div>
+        <div class="bd">
+          <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/YY.png" alt="유리 코발렌코" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+          <div class="nm">유리 코발렌코</div>
+          <div class="alias">ALIAS · <b>개새끼</b></div>
+          <div class="twocol"><div><div class="k">나이</div><div class="v">38</div></div><div><div class="k">신장</div><div class="v">190</div></div></div>
+          <div class="field"><div class="k">수감 사유</div><p>전 특수부대 장교. 군 자산과 무기를 횡령해 체제 전복 반란을 획책함. 내부 고발로 실패, 교전 중 다수 사상자를 낸 뒤 수감됨.</p></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="corner"></div>
+        <div class="hd"><div class="pid">S-0666<small>PRISONER NO.</small></div><div class="clr">TIER 4 / INMATE</div></div>
+        <div class="bd">
+          <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/LL.png" alt="루카스 크로울리" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+          <div class="nm">루카스 크로울리</div>
+          <div class="alias">ALIAS · <b>뱀</b></div>
+          <div class="twocol"><div><div class="k">나이</div><div class="v">34</div></div><div><div class="k">신장</div><div class="v">182</div></div></div>
+          <div class="field"><div class="k">수감 사유</div><p>사이비 교단 창설. 유려한 화술로 신도를 현혹해 자산을 갈취하고, 은폐를 위해 살인 교사 및 집단 자살을 지시함.</p></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="corner"></div>
+        <div class="hd"><div class="pid">B-4044<small>PRISONER NO.</small></div><div class="clr">TIER 4 / INMATE</div></div>
+        <div class="bd">
+          <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/JJ.png" alt="쥴리앙 리모안" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+          <div class="nm">쥴리앙 리모안</div>
+          <div class="alias">ALIAS · <b>고깃덩어리</b></div>
+          <div class="twocol"><div><div class="k">나이</div><div class="v">28</div></div><div><div class="k">신장</div><div class="v">183</div></div></div>
+          <div class="field"><div class="k">수감 사유</div><p>법의학자. 법의학 지식을 이용해 7명을 살해하고 사체를 훼손한 후 범죄를 은폐함. 검거되어 수감됨.</p></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="corner"></div>
+        <div class="hd"><div class="pid">E-0005<small>PRISONER NO.</small></div><div class="clr">TIER 4 / INMATE</div></div>
+        <div class="bd">
+          <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/BB.png" alt="빅터 하일린" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+          <div class="nm">빅터 하일린</div>
+          <div class="alias">ALIAS · <b>쥐새끼</b></div>
+          <div class="twocol"><div><div class="k">나이</div><div class="v">34</div></div><div><div class="k">신장</div><div class="v">180</div></div></div>
+          <div class="field"><div class="k">수감 사유</div><p>제약사 수석 연구원. 약의 완성을 명목으로 무고한 사람들을 납치, 수십 명을 대상으로 불법 인체 실험을 감행하다 적발됨.</p></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="corner"></div>
+        <div class="hd"><div class="pid">D-1010<small>PRISONER NO.</small></div><div class="clr">TIER 4 / INMATE</div></div>
+        <div class="bd">
+          <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/DD.png" alt="데이비드 한" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+          <div class="nm">데이비드 한</div>
+          <div class="alias">ALIAS · <b>버그</b></div>
+          <div class="twocol"><div><div class="k">나이</div><div class="v">25</div></div><div><div class="k">신장</div><div class="v">178</div></div></div>
+          <div class="field"><div class="k">수감 사유</div><p>해커. 전 세계 금융망을 해킹해 막대한 자금을 훔치고 불법 자금을 세탁함. 세계 경제에 심각한 혼란을 야기한 경제사범.</p></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="corner"></div>
+        <div class="hd"><div class="pid">V-8888<small>PRISONER NO.</small></div><div class="clr">TIER 4 / INMATE</div></div>
+        <div class="bd">
+          <div class="photo has-img"><img src="https://raw.githubusercontent.com/Yam-Y-c/HUWEB/refs/heads/main/RR.png" alt="로런스 하트먼" loading="lazy"><span class="ph-corner tl"></span><span class="ph-corner tr"></span><span class="ph-corner bl"></span><span class="ph-corner br"></span></div>
+          <div class="nm">로런스 하트먼</div>
+          <div class="alias">ALIAS · <b>장난감</b></div>
+          <div class="twocol"><div><div class="k">나이</div><div class="v">27</div></div><div><div class="k">신장</div><div class="v">184</div></div></div>
+          <div class="field"><div class="k">수감 사유</div><p>특권층 재벌 3세. 막대한 자본으로 부유층을 위한 실제 데스게임을 개최함. 생존자의 폭로로 실체가 드러나 입소.</p></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="pad">
+    <div class="foot">
+      <div class="sig">
+        <span class="ln"></span><br>
+        승인 — <span class="redact mono">████ ████</span> / OMEGA<br>
+        <div class="foot-stamp">⬛ OMEGA EYES ONLY</div>
+      </div>
+      <div class="meta">
+        <div class="r">// RESTRICTED — UNAUTHORIZED ACCESS PROHIBITED</div>
+        <div>FILE BW-ROSTER-A1 · REV.07</div>
+        <div>FICTION / WORLDBUILDING REFERENCE</div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// flip cards
+document.querySelectorAll('.flag').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const card=document.getElementById(btn.dataset.flip);
+    const flipped=card.classList.toggle('flipped');
+    btn.querySelector('span').textContent=flipped?'교도관 기록으로 복귀':'강등 재분류 정보 열람';
+  });
+});
+// match flip card heights so absolute back fits
+function sizeFlips(){
+  document.querySelectorAll('.flip').forEach(f=>{
+    const inner=f.querySelector('.inner');
+    const front=f.querySelector('.front');
+    const back=f.querySelector('.back');
+    inner.style.height='auto';
+    const h=Math.max(front.offsetHeight,back.offsetHeight);
+    inner.style.height=h+'px';
+  });
+}
+window.addEventListener('load',sizeFlips);
+window.addEventListener('resize',sizeFlips);
+// 이미지 로드 완료 시마다 플립 카드 높이 재계산
+document.querySelectorAll('.flip img').forEach(img=>{
+  if(img.complete)return;
+  img.addEventListener('load',sizeFlips);
+  img.addEventListener('error',sizeFlips);
+});
+// nav active
+const links=[...document.querySelectorAll('nav.tabs a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('on'));const i=secs.indexOf(e.target);if(links[i])links[i].classList.add('on');}});
+},{rootMargin:'-30% 0px -60% 0px'});
+secs.forEach(s=>s&&obs.observe(s));
+</script>
+
+</body>
+</html>
