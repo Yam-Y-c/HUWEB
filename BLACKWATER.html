@@ -38,13 +38,13 @@ body{
 }
 /* paper texture sheet */
 .sheet{
-  max-width:1000px;margin:0 auto;
+  width:100%;margin:0 auto;
+  min-height:100vh;
   background:var(--paper);
   background-image:
     repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(120,110,90,.05) 31px,rgba(120,110,90,.05) 32px),
     radial-gradient(circle at 18% 12%,rgba(150,130,90,.07),transparent 25%),
     radial-gradient(circle at 82% 78%,rgba(120,100,70,.06),transparent 30%);
-  box-shadow:0 0 80px rgba(0,0,0,.7);
   position:relative;
 }
 .sheet::before{
@@ -57,12 +57,12 @@ body{
 .type{font-family:var(--type)}
 ::selection{background:var(--ink);color:var(--paper)}
 
-.pad{padding:0 clamp(24px,6vw,72px)}
+.pad{max-width:1000px;margin-left:auto;margin-right:auto;padding:0 clamp(24px,6vw,72px)}
 
 /* ===== file header strip ===== */
 .filebar{
   border-bottom:3px double var(--ink);
-  padding:14px clamp(24px,6vw,72px);
+  padding:14px max(clamp(24px,6vw,72px),calc((100% - 1000px)/2 + clamp(24px,6vw,72px)));
   display:flex;justify-content:space-between;align-items:center;gap:16px;
   font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);
   flex-wrap:wrap;
